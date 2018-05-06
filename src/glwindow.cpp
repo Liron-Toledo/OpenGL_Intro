@@ -166,43 +166,133 @@ void OpenGLWindow::initGL()
 
 void OpenGLWindow::render()
 {
-    
+    //Delta Time
+    long last = 0;
+    float deltaTime = 0.0;    
+    long now = SDL_GetTicks();
+
+    //working out deltatime
+    if (now > last) {
+        deltaTime = ((float)(now - last)) / 1000;
+        last = now;
+    }
+
+    glm::vec3 position = glm::vec3( 0, 0, 5 );
+    // horizontal angle : toward -Z
+    float horizontalAngle = 3.14f;
+    // vertical angle : 0, look at the horizon
+    float verticalAngle = 0.0f;
+    // Initial Field of View
+    float initialFoV = 45.0f;
+
+    float speed = 3.0f; // 3 units / second
+
+    horizontalAngle += speed * deltaTime * float(640/2 - position.x);
+    verticalAngle += speed * deltaTime * float(480/2 - position.y);
+
+    glm::vec3 direction(
+    cos(verticalAngle) * sin(horizontalAngle),
+    sin(verticalAngle),
+    cos(verticalAngle) * cos(horizontalAngle)
+);
+
+    glm::vec3 right = glm::vec3(
+        sin(horizontalAngle - 3.14f/2.0f),
+        0,
+        cos(horizontalAngle - 3.14f/2.0f)
+    );
+
+    glm::vec3 up = glm::cross(right, direction);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-        GLuint MatrixID = glGetUniformLocation(shader, "MVP");
+    GLuint MatrixID = glGetUniformLocation(shader, "MVP");
 
     // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-    glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+    //glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
     // Or, for an ortho camera :
     //glm::mat4 Projection = glm::ortho(-10.0f,10.0f,-10.0f,10.0f,0.0f,100.0f); // In world coordinates
 
     // Camera matrix
-    glm::mat4 View       = glm::lookAt(
-                                glm::vec3(4,3,3), // Camera is at (4,3,3), in World Space
-                                glm::vec3(0,0,0), // and looks at the origin
-                                glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-                           );
-    // Model matrix : an identity matrix (model will be at the origin)
-    Model      = glm::mat4(1.0f);
     
-    Model = glm::translate(Model, glm::vec3(2,0,0)); //translate
-    //Model = glm::rotate(Model, glm::vec3(2,0,0)); //rotate
+    // glm::mat4 View       = glm::lookAt(
+    //                             glm::vec3(4,3,3), // Camera is at (4,3,3), in World Space
+    //                             glm::vec3(0,0,0), // and looks at the origin
+    //                             glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+    //                        );
+    
+    
+
+    // Model matrix : an identity matrix (model will be at the origin)
+    Model = glm::mat4(1.0f);
+    
+    //Model = glm::translate(Model, glm::vec3(2,0,0)); //translate
+
+    const Uint8 *state = SDL_GetKeyboardState(NULL);
+   
+    if (state[SDL_SCANCODE_RIGHT]) 
+    {
+        printf("Right Key Pressed.\n");
+        //Model = glm::translate(Model, glm::vec3(0.05,0,0));
+        position += right * deltaTime * speed;
+    }
+
+    if (state[SDL_SCANCODE_LEFT]) 
+    {
+        printf("Left Key Pressed.\n");
+        //Model = glm::translate(Model, glm::vec3(-0.05,0,0));
+        position -= right * deltaTime * speed;
+    }
+
+/*
+    if (state[SDL_SCANCODE_UP]) 
+    {
+        printf("Up Key Pressed.\n");
+    }
+
+    if (state[SDL_SCANCODE_DOWN]) 
+    {
+        printf("Down Key Pressed.\n");
+    }
+*/
+    // SDL_Event event;
+    // if(event.type == SDL_MOUSEWHEEL)
+    // {
+    //     if(event.wheel.y > 0) // scroll up
+    //     {
+    //          // Pull up code here!
+    //         cout << "up" << endl;
+    //     }
+    //     else if(event.wheel.y < 0) // scroll down
+    //     {
+    //          // Pull down code here!
+    //         cout << "down" << endl;
+    //     }
+    // }
+
+    //float FoV = initialFoV - 5 * glfwGetMouseWheel(); //zooming in and out
+
+    glm::mat4 Projection = glm::perspective(glm::radians(initialFoV), 4.0f / 3.0f, 0.1f, 100.0f);
+    glm::mat4 View       = glm::lookAt(
+                                position, 
+                                position+direction, 
+                                up  
+                           );
 
     // Our ModelViewProjection : multiplication of our 3 matrices
-    MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
-
-     
-    
+    MVP  = Projection * View * Model; // Remember, matrix multiplication is the other way around
 
     // Load the model that we want to use and buffer the vertex attributes
     // GeometryData geometry = loadFromOBJFile("tri.obj");
     GeometryData doggo;
     doggo.loadFromOBJFile("/home/t/tldlir001/OpenGL_Assignment/opengl-prac1/doggo.obj");
 
+    /*
     float vertices[9] = { 0.0f,  0.5f, 0.0f,
                          -0.5f, -0.5f, 0.0f,
                           0.5f, -0.5f, 0.0f }; //gonna load a picture here (triangle)
+    */
 
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
