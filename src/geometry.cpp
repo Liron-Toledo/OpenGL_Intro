@@ -282,7 +282,7 @@ void GeometryData::loadFromOBJFile(string filename)
         }
     }
 
-    cout << "Successfully loaded an OBJ with " << vertices.size()/3 << " vertices " << endl;
+   // cout << "Successfully loaded an OBJ with " << vertices.size()/3 << " vertices " << endl;
 }
 
 int GeometryData::vertexCount()

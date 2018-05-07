@@ -19,6 +19,8 @@ glm::mat4 View;
 glm::mat4 Projection;
 glm::mat4 MVP;
 
+float size = 1.0f;
+
 const char* glGetErrorString(GLenum error)
 {
     switch(error)
@@ -234,16 +236,40 @@ void OpenGLWindow::render()
         Model = glm::rotate(Model, glm::radians(15.0f), glm::vec3(4, 3, 3));
     }
 
-    // if(state[SDL_MOUSEWHEEL])
+    if(state[SDL_SCANCODE_S])
+    {
+        if(size > 0.00)
+        { 
+            size -= 0.01f;
+        }
+
+        printf("S Key Pressed.\n");
+        Model = glm::scale(glm::mat4(1.0f), glm::vec3(size));
+    }
+
+    if(state[SDL_SCANCODE_B])
+    {
+        if(size < 20.00)
+        { 
+            size += 0.01f;
+        }
+        
+        printf("B Key Pressed.\n");
+        Model = glm::scale(glm::mat4(1.0f), glm::vec3(size));
+    }
+
+    // const Uint32 *Mstate = SDL_GetMouseState(0,0);
+    // if(Mstate[SDL_MOUSEWHEEL])
     // {
     //     Model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
     //     cout << "hey" << endl;
     // }
 
-    if(state[SDL_SCANCODE_S])
-    {
-        Model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
-    }
+    // SDL_PumpEvents();
+    // if (SDL_GetMouseState(NULL, NULL)) {
+    // SDL_Log("Mouse Button 1 (left)");
+    // }
+
 
     SDL_Event event;
     while( SDL_PollEvent( &event ) )
@@ -261,21 +287,6 @@ void OpenGLWindow::render()
         }
     }
 
-
-    // SDL_Event event;
-    // if(event.type == SDL_MOUSEWHEEL)
-    // {
-    //     if(event.wheel.y > 0) // scroll up
-    //     {
-    //          // Pull up code here!
-    //         cout << "up" << endl;
-    //     }
-    //     else if(event.wheel.y < 0) // scroll down
-    //     {
-    //          // Pull down code here!
-    //         cout << "down" << endl;
-    //     }
-    // }
 
     // Our ModelViewProjection : multiplication of our 3 matrices
     MVP  = Projection * View * Model; // Remember, matrix multiplication is the other way around
